@@ -1,0 +1,9 @@
+project:
+  name: mynavi-sample-aws-cloudformation
+  regions:
+    - us-west-1
+tests:
+  vpc-test:
+    parameters:
+      VPCCiderBlock: 172.255.0.0/16
+    template: ./test-cfn.yml
