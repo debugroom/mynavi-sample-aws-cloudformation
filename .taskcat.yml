@@ -3,7 +3,17 @@ project:
   regions:
     - us-west-1
 tests:
-  vpc-test:
+  test-taskcat:
     parameters:
       VPCCiderBlock: 172.255.0.0/16
     template: ./test-cfn.yml
+  vpc-test:
+    parameters:
+      VPCName: mynavi-sample-test-vpc
+      VPCCiderBlock: 172.240.0.0/16
+      PublicSubnet1CiderBlock: 172.240.1.0/24
+      PublicSubnet2CiderBlock: 172.240.2.0/24
+      PrivateSubnet1CiderBlock: 172.240.3.0/24
+      PrivateSubnet2CiderBlock: 172.240.4.0/24
+    template: ./sample-vpc-cfn.yml
+
