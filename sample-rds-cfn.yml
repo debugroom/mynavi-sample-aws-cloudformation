@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - RDS Definition
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  RdsUser:
+    Description: Database Master User Name
+    Type: String
+    Default: postgresql
+  DeployType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+Conditions:
+  ProductionResources: {"Fn::Equals" : [{"Ref":"DeployType"}, "Production"]}
+  StagingResources: !Equals [ !Ref DeployType, "Staging"]
+  DevResources: {"Fn::Equals" : [{"Ref":"DeployType"}, "Dev"]}
+
+Resources:
+  RDSProductionInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Condition: "ProductionResources"
+    Properties:
+      DBInstanceIdentifier: mynavi-sample-cloudformation-production-postgresql
+      DBName: PostgreSQL
+      Engine: postgres
+      MultiAZ: false
+      MasterUsername: !Ref RdsUser
+      MasterUserPassword: '{{resolve:ssm-secure:mynavi-sample-cloudformation-rds-password:1}}'
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: '20'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      MonitoringInterval: 10
+      MonitoringRoleArn: !GetAtt DBMonitorRole.Arn
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupRdsPostgres
+
+  RDSStagingInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Condition: "StagingResources"
+    Properties:
+      DBInstanceIdentifier: mynavi-sample-cloudformation-staging-postgresql
+      DBName: PostgreSQL
+      Engine: postgres
+      MultiAZ: false
+      MasterUsername: !Ref RdsUser
+      MasterUserPassword: '{{resolve:ssm-secure:mynavi-sample-cloudformation-rds-password:1}}'
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: '20'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      MonitoringInterval: 10
+      MonitoringRoleArn: !GetAtt DBMonitorRole.Arn
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupRdsPostgres
+
+  RDSDevInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Condition: "DevResources"
+    Properties:
+      DBInstanceIdentifier: mynavi-sample-cloudformation-dev-postgresql
+      DBName: PostgreSQL
+      Engine: postgres
+      MultiAZ: false
+      MasterUsername: !Ref RdsUser
+      MasterUserPassword: '{{resolve:ssm-secure:mynavi-sample-cloudformation-rds-password:1}}'
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: '20'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      MonitoringInterval: 10
+      MonitoringRoleArn: !GetAtt DBMonitorRole.Arn
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupRdsPostgres
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB Subnet Group for Private Subnet
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet1
+        - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet2
+
+  DBMonitorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - monitoring.rds.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+Outputs:
+  RDSProductionInstance:
+    Condition: "ProductionResources"
+    Description: RDS
+    Value: !Ref RDSProductionInstance
+    Export:
+      Name: !Sub ${VPCName}-RDS-Procution
+
+  RDSProductionInstanceEndPoint:
+    Condition: "ProductionResources"
+    Description: RDS
+    Value: !GetAtt RDSProductionInstance.Endpoint.Address
+    Export:
+      Name: !Sub ${VPCName}-RDSEndpoint-Production
+
+  RDSStagingInstance:
+    Condition: "StagingResources"
+    Description: RDS
+    Value: !Ref RDSStagingInstance
+    Export:
+      Name: !Sub ${VPCName}-RDS-Staging
+
+  RDSStagingInstanceEndPoint:
+    Condition: "StagingResources"
+    Description: RDS
+    Value: !GetAtt RDSStagingInstance.Endpoint.Address
+    Export:
+      Name: !Sub ${VPCName}-RDSEndpoint-Staging
+
+  RDSDevInstance:
+    Condition: "DevResources"
+    Description: RDS
+    Value: !Ref RDSDevInstance
+    Export:
+      Name: !Sub ${VPCName}-RDS-Dev
+
+  RDSDevInstanceEndPoint:
+    Condition: "DevResources"
+    Description: RDS
+    Value: !GetAtt RDSDevInstance.Endpoint.Address
+    Export:
+      Name: !Sub ${VPCName}-RDSEndpoint-Dev
