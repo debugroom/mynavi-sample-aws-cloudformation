@@ -22,7 +22,7 @@ Parameters:
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
     Default: mynavi-sample-cloudformation-vpc
-  DeployType:
+  EnvType:
     Description: Which environments to deploy your service.
     Type: String
     AllowedValues: ["Dev", "Staging", "Production"]
@@ -61,8 +61,8 @@ Resources:
       Name: FrontendALBTargetGroup
       VpcId:
         Fn::ImportValue: !Sub ${VPCName}-VPCID
-      Port: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Port]
-      Protocol: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Protocol]
+      Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
+      Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !Ref FrontendHealthCheckPath
       HealthyThresholdCount: 2
       TargetGroupAttributes:
@@ -73,8 +73,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref FrontendALB
-      Port: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Port]
-      Protocol: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Protocol]
+      Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
+      Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref FrontendALBDefaultTargetGroup
@@ -95,8 +95,8 @@ Resources:
       Name: BackendALBDefaultTargetGroup
       VpcId:
         Fn::ImportValue: !Sub ${VPCName}-VPCID
-      Port: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Port]
-      Protocol: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Protocol]
+      Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
+      Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !Ref BackendDefaultHealthCheckPath
       HealthyThresholdCount: 2
       TargetGroupAttributes:
@@ -107,8 +107,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref BackendALB
-      Port: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Port]
-      Protocol: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Protocol]
+      Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
+      Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref BackendALBDefaultTargetGroup

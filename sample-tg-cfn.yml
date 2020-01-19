@@ -40,7 +40,7 @@ Parameters:
     Type: String
     AllowedValues: ["Frontend", "Backend"]
     Default: Backend
-  DeployType:
+  EnvType:
     Description: Which environments to deploy your service.
     Type: String
     AllowedValues: ["Dev", "Staging", "Production"]
@@ -57,11 +57,11 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub ${DeployType}-${ServiceName}-tg
+      Name: !Sub ${EnvType}-${ServiceName}-tg
       VpcId:
         Fn::ImportValue: !Sub ${VPCName}-VPCID
-      Port: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Port]
-      Protocol: !FindInMap [DeployEnvironmentMap, !Ref DeployType, Protocol]
+      Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
+      Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !FindInMap [TargetGroupDefinitionMap, !Ref ServiceName, HealthCheckPath]
       HealthyThresholdCount: 2
       TargetGroupAttributes:

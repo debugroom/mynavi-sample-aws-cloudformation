@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: Sample CloudFormation template with YAML - RDS Definition
+Description: Sample CloudFormation template with YAML - RDS Definition Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml
 
 Parameters:
   VPCName:
@@ -14,19 +14,20 @@ Parameters:
     Description: Database Master User Name
     Type: String
     Default: postgresql
-  DeployType:
+  EnvType:
     Description: Which environments to deploy your service.
     Type: String
     AllowedValues: ["Dev", "Staging", "Production"]
     Default: Dev
 Conditions:
-  ProductionResources: {"Fn::Equals" : [{"Ref":"DeployType"}, "Production"]}
-  StagingResources: !Equals [ !Ref DeployType, "Staging"]
-  DevResources: {"Fn::Equals" : [{"Ref":"DeployType"}, "Dev"]}
+  ProductionResources: {"Fn::Equals" : [{"Ref":"EnvType"}, "Production"]}
+  StagingResources: !Equals [ !Ref EnvType, "Staging"]
+  DevResources: {"Fn::Equals" : [{"Ref":"EnvType"}, "Dev"]}
 
 Resources:
   RDSProductionInstance:
     Type: AWS::RDS::DBInstance
+    UpdateReplacePolicy: Snapshot
     DeletionPolicy: Snapshot
     Condition: "ProductionResources"
     Properties:
@@ -46,6 +47,7 @@ Resources:
 
   RDSStagingInstance:
     Type: AWS::RDS::DBInstance
+    UpdateReplacePolicy: Snapshot
     DeletionPolicy: Snapshot
     Condition: "StagingResources"
     Properties:
@@ -65,6 +67,7 @@ Resources:
 
   RDSDevInstance:
     Type: AWS::RDS::DBInstance
+    UpdateReplacePolicy: Snapshot
     DeletionPolicy: Snapshot
     Condition: "DevResources"
     Properties:
@@ -109,42 +112,42 @@ Resources:
 Outputs:
   RDSProductionInstance:
     Condition: "ProductionResources"
-    Description: RDS
+    Description: RDS for Production
     Value: !Ref RDSProductionInstance
     Export:
-      Name: !Sub ${VPCName}-RDS-Procution
+      Name: !Sub ${VPCName}-RDS-Production
 
   RDSProductionInstanceEndPoint:
     Condition: "ProductionResources"
-    Description: RDS
+    Description: RDS endpoint for Production
     Value: !GetAtt RDSProductionInstance.Endpoint.Address
     Export:
       Name: !Sub ${VPCName}-RDSEndpoint-Production
 
   RDSStagingInstance:
     Condition: "StagingResources"
-    Description: RDS
+    Description: RDS endpoint for Staging
     Value: !Ref RDSStagingInstance
     Export:
       Name: !Sub ${VPCName}-RDS-Staging
 
   RDSStagingInstanceEndPoint:
     Condition: "StagingResources"
-    Description: RDS
+    Description: RDS endpoint for Staging
     Value: !GetAtt RDSStagingInstance.Endpoint.Address
     Export:
       Name: !Sub ${VPCName}-RDSEndpoint-Staging
 
   RDSDevInstance:
     Condition: "DevResources"
-    Description: RDS
+    Description: RDS for dev
     Value: !Ref RDSDevInstance
     Export:
       Name: !Sub ${VPCName}-RDS-Dev
 
   RDSDevInstanceEndPoint:
     Condition: "DevResources"
-    Description: RDS
+    Description: RDS endpoint for dev
     Value: !GetAtt RDSDevInstance.Endpoint.Address
     Export:
       Name: !Sub ${VPCName}-RDSEndpoint-Dev
