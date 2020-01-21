@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-stack_name="mynavi-sample-dynamodb"
+stack_name="mynavi-sample-elasticache"
+#stack_name="mynavi-sample-dynamodb"
 #stack_name="mynavi-sample-rds"
 #stack_name="mynavi-sample-tg-frontend-webapp"
 #stack_name="mynavi-sample-tg-backend-serviceA"

@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ElastiCache Definition depends on sample-vpc-cfn.yml, sample-sg-cfn.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Staging", "Production"]
+    Default: Staging
+
+Mappings:
+  CacheDefinitionMap:
+    Production:
+      "CacheInstanceType": "cache.t2.micro"
+      "CacheParameterGroupFamily": "redis5.0"
+      "EngineVersion": "5.0.3"
+      "Port": 6379
+      "ClusterEnabled" : "yes"
+      "AutomaticFailoverEnabled": true
+      "ReplicasPerNodeGroup": 2
+    Staging:
+      "CacheInstanceType": "cache.t2.micro"
+      "CacheParameterGroupFamily": "redis5.0"
+      "EngineVersion": "5.0.3"
+      "Port": 6379
+      "ClusterEnabled" : "no"
+      "AutomaticFailoverEnabled": false
+      "ReplicasPerNodeGroup": 1
+
+Resources:
+  ElastiCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      CacheSubnetGroupName: ElastiCacheSubnetGroup
+      Description: SampleCloudFormation ElastiCacheSubnetGroup
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet2
+
+  ElastiCacheParameterGroup:
+    Type: AWS::ElastiCache::ParameterGroup
+    Properties:
+      CacheParameterGroupFamily: !FindInMap [CacheDefinitionMap, !Ref EnvType, CacheParameterGroupFamily]
+      Description: SampleCloudFormation ElastiCacheParameterGroup
+      Properties:
+        cluster-enabled: !FindInMap [CacheDefinitionMap, !Ref EnvType, ClusterEnabled]
+
+  ElastiCacheRedis:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupId: !Sub elasticache-${EnvType}
+      Engine: redis
+      ReplicationGroupDescription: SampleCloudFormation RedisCluster
+      EngineVersion: !FindInMap [CacheDefinitionMap, !Ref EnvType, EngineVersion]
+      Port: !FindInMap [CacheDefinitionMap, !Ref EnvType, Port]
+      CacheParameterGroupName: !Ref ElastiCacheParameterGroup
+      CacheNodeType: !FindInMap [CacheDefinitionMap, !Ref EnvType, CacheInstanceType] 
+      ReplicasPerNodeGroup: !FindInMap [CacheDefinitionMap, !Ref EnvType, ReplicasPerNodeGroup]
+      AutomaticFailoverEnabled: !FindInMap [CacheDefinitionMap, !Ref EnvType, AutomaticFailoverEnabled]
+      CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupElastiCacheRedis
+
+Outputs:
+  ElastiCacheRedis:
+    Description: ElastiCache Redis
+    Value: !Ref ElastiCacheRedis
+    Export:
+      Name: !Sub ${VPCName}-ElastiCacheRedis
+
+  ElastiCacheRedisEndPoint:
+    Description: ElastiCache Redis EndPoint
+    Value: !GetAtt ElastiCacheRedis.PrimaryEndPoint.Address
+    Export:
+      Name: !Sub ${VPCName}-ElastiCacheRedisEndPoint
