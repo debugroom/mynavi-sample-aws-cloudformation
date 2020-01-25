@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-stack_name="mynavi-sample-elasticache"
+stack_name="mynavi-sample-s3"
+#stack_name="mynavi-sample-elasticache"
 #stack_name="mynavi-sample-dynamodb"
 #stack_name="mynavi-sample-rds"
 #stack_name="mynavi-sample-tg-frontend-webapp"
@@ -10,7 +11,8 @@ stack_name="mynavi-sample-elasticache"
 #stack_name="mynavi-sample-ng"
 #stack_name="mynavi-sample-sg"
 #stack_name="mynavi-sample-vpc"
-template_path="sample-elasticache-cfn.yml"
+template_path="sample-s3-cfn.yml"
+#template_path="sample-elasticache-cfn.yml"
 #template_path="sample-dynamodb-cfn.yml"
 #template_path="sample-rds-cfn.yml"
 #template_path="sample-tg-cfn.yml"
