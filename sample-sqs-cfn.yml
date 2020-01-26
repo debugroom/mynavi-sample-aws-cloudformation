@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML
+
+Parameters:
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["dev", "staging", "production"]
+    Default: dev
+
+Resources:
+  SQSSampleQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub mynavi-sample-queue-${EnvType}
+      VisibilityTimeout: 30
+      DelaySeconds: 5
+      MaximumMessageSize: 26144
+      MessageRetentionPeriod: 345600
+      ReceiveMessageWaitTimeSeconds: 0
+
+Outputs:
+  SQSSampleQueue:
+    Description: SQS sample queue
+    Value: !Ref SQSSampleQueue
+    Export:
+      Name: !Sub MynaviSampleSQS-${EnvType}
+

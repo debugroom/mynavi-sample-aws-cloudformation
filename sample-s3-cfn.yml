@@ -3,6 +3,11 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Sample CloudFormation template with YAML - S3 Bucket Definition
 
 Parameters:
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["dev", "staging", "production"]
+    Default: dev
   S3BucketName:
     Description: The BacketName.
     Type: String
@@ -12,7 +17,7 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${S3BucketName}
+      BucketName: !Sub ${S3BucketName}-${EnvType}
       AccessControl: Private
       PublicAccessBlockConfiguration:
         BlockPublicAcls: True
@@ -21,5 +26,8 @@ Resources:
         RestrictPublicBuckets: True
 
 Outputs:
-  SampleCloudFormationS3Bucket:
+  S3Bucket:
+    Description: Mynavi S3 bucket name
     Value: !Ref S3Bucket
+    Export:
+      Name: !Sub MynaviSampleS3Bucket-${EnvType}

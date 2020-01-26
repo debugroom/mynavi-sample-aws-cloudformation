@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-stack_name="mynavi-sample-s3"
+stack_name="mynavi-sample-sqs"
+#stack_name="mynavi-sample-s3"
 #stack_name="mynavi-sample-elasticache"
 #stack_name="mynavi-sample-dynamodb"
 #stack_name="mynavi-sample-rds"
