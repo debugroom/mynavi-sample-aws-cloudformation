@@ -2,23 +2,47 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Description: Sample CloudFormation template with YAML
 
+Mappings:
+  SQSDefinitionMap:
+    Production:
+      "QueueName" : mynavi-sample-queue-production
+      "VisibilityTimeout": 30
+      "DelaySeconds" : 5
+      "MaximumMessageSize" : 26144
+      "MessageRetentionPeriod" : 345600
+      "ReceiveMessageWaitTimeSeconds" : 0
+    Staging:
+      "QueueName" : mynavi-sample-queue-staging
+      "VisibilityTimeout": 30
+      "DelaySeconds" : 5
+      "MaximumMessageSize" : 26144
+      "MessageRetentionPeriod" : 345600
+      "ReceiveMessageWaitTimeSeconds" : 0
+    Dev:
+      "QueueName" : mynavi-sample-queue-dev
+      "VisibilityTimeout": 30
+      "DelaySeconds" : 5
+      "MaximumMessageSize" : 26144
+      "MessageRetentionPeriod" : 345600
+      "ReceiveMessageWaitTimeSeconds" : 0
+
 Parameters:
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
-    AllowedValues: ["dev", "staging", "production"]
-    Default: dev
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
 
 Resources:
   SQSSampleQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub mynavi-sample-queue-${EnvType}
-      VisibilityTimeout: 30
-      DelaySeconds: 5
-      MaximumMessageSize: 26144
-      MessageRetentionPeriod: 345600
-      ReceiveMessageWaitTimeSeconds: 0
+      QueueName: !FindInMap [SQSDefinitionMap, !Ref EnvType, QueueName]
+      VisibilityTimeout: !FindInMap [SQSDefinitionMap, !Ref EnvType, VisibilityTimeout]
+      DelaySeconds:  !FindInMap [SQSDefinitionMap, !Ref EnvType, DelaySeconds]
+      MaximumMessageSize: !FindInMap [SQSDefinitionMap, !Ref EnvType, MaximumMessageSize]
+      MessageRetentionPeriod:  !FindInMap [SQSDefinitionMap, !Ref EnvType, MessageRetentionPeriod]
+      ReceiveMessageWaitTimeSeconds:  !FindInMap [SQSDefinitionMap, !Ref EnvType, ReceiveMessageWaitTimeSeconds]
 
 Outputs:
   SQSSampleQueue:

@@ -2,28 +2,48 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Description: Sample CloudFormation template with YAML - S3 Bucket Definition
 
+Mappings:
+  BucketDefinitionMap:
+    Production:
+      "BucketName" : debugroom-mynavi-sample-cloudformation-bucket-production
+      "AccessControl" : "Private"
+      "BlockPublicAcls" : True
+      "BlockPublicPolicy" : True
+      "IgnorePublicAcls" : True
+      "RestrictPublicBuckets" : True
+    Staging:
+      "BucketName" : debugroom-mynavi-sample-cloudformation-bucket-staging
+      "AccessControl" : "Private"
+      "BlockPublicAcls" : True
+      "BlockPublicPolicy" : True
+      "IgnorePublicAcls" : True
+      "RestrictPublicBuckets" : True
+    Dev:
+      "BucketName" : debugroom-mynavi-sample-cloudformation-bucket-dev
+      "AccessControl" : "Private"
+      "BlockPublicAcls" : True
+      "BlockPublicPolicy" : True
+      "IgnorePublicAcls" : True
+      "RestrictPublicBuckets" : True
+
 Parameters:
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
-    AllowedValues: ["dev", "staging", "production"]
-    Default: dev
-  S3BucketName:
-    Description: The BacketName.
-    Type: String
-    Default: debugroom-mynavi-sample-cloudformation-bucket
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
 
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${S3BucketName}-${EnvType}
-      AccessControl: Private
+      BucketName: !FindInMap [BucketDefinitionMap, !Ref EnvType, BucketName]
+      AccessControl: !FindInMap [BucketDefinitionMap, !Ref EnvType, AccessControl]
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: True
-        BlockPublicPolicy: True
-        IgnorePublicAcls: True
-        RestrictPublicBuckets: True
+        BlockPublicAcls: !FindInMap [BucketDefinitionMap, !Ref EnvType, BlockPublicAcls]
+        BlockPublicPolicy: !FindInMap [BucketDefinitionMap, !Ref EnvType, BlockPublicPolicy]
+        IgnorePublicAcls: !FindInMap [BucketDefinitionMap, !Ref EnvType, IgnorePublicAcls]
+        RestrictPublicBuckets: !FindInMap [BucketDefinitionMap, !Ref EnvType, RestrictPublicBuckets]
 
 Outputs:
   S3Bucket:
