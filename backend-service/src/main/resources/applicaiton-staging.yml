@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    initialization-mode: always
+    schema: classpath:/ddl/schema-postgresql.ddl
+cloud:
+  aws:
+    stack:
+      auto: false

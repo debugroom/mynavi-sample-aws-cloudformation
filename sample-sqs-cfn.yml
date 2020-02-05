@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: Sample CloudFormation template with YAML
+Description: Sample CloudFormation template with YAML - SQS Definition
 
 Mappings:
   SQSDefinitionMap:
@@ -45,6 +45,12 @@ Resources:
       ReceiveMessageWaitTimeSeconds:  !FindInMap [SQSDefinitionMap, !Ref EnvType, ReceiveMessageWaitTimeSeconds]
 
 Outputs:
+  SQSServiceEndpoint:
+    Description: SQS service endipoint
+    Value: !Sub https://sqs.${AWS::Region}.amazonaws.com
+    Export:
+      Name: !Sub MynaviSampleSQS-${EnvType}-ServiceEndpoint
+
   SQSSampleQueue:
     Description: SQS sample queue
     Value: !Ref SQSSampleQueue

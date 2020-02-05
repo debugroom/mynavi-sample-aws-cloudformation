@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - parent stack for staging environment.
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Staging
+
+Resources:
+  NATGatewayStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-ng-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+
+  ALBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-alb-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+
+  BackendServiceATargetGroupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ALBStack
+    Properties:
+      TemplateURL: ./sample-tg-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+        SubnetType: Backend
+        ServiceName: BackendServiceA
+
+  BackendServiceBTargetGroupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ALBStack
+    Properties:
+      TemplateURL: ./sample-tg-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+        SubnetType: Backend
+        ServiceName: BackendServiceB
+
+  FrontendWebAppTargetGroupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ALBStack
+    Properties:
+      TemplateURL: ./sample-tg-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+        SubnetType: Frontend
+        ServiceName: FrontendWebApp
+
+  RDSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-rds-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+
+  DynamoDBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-dynamodb-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+
+  ElastiCacheStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-elasticache-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-s3-cfn.yml
+      Parameters:
+        EnvType: !Sub ${EnvType}
+
+  SQSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-sqs-cfn.yml
+      Parameters:
+        EnvType: !Sub ${EnvType}
+
+Outputs:
+  FrontendALBDNS:
+    Value: !GetAtt ALBStack.Outputs.FrontendALBDNS
+
+  BackendALBDNS:
+    Value: !GetAtt ALBStack.Outputs.BackendALBDNS
+
+  ElastiCacheRedisEndPoint:
+    Value: !GetAtt ElastiCacheStack.Outputs.ElastiCacheRedisEndPoint

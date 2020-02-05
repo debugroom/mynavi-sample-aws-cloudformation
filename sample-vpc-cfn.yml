@@ -201,3 +201,9 @@ Outputs:
       - PrivateSubnet2: !Ref PrivateSubnet2
     Export:
       Name: !Sub ${VPCName}-PrivateSubnet2Arn
+
+  EnvironmentRegion:
+    Description: Dev Environment Region
+    Value: !Sub ${AWS::Region}
+    Export:
+      Name: !Sub ${VPCName}-EnvironmentRegion

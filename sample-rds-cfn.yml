@@ -18,7 +18,12 @@ Parameters:
     Description: Which environments to deploy your service.
     Type: String
     AllowedValues: ["Dev", "Staging", "Production"]
-    Default: Dev
+    Default: Staging
+  SecurityGroupDev:
+    Description: The local machine permitted SecurityGroup is needed as paramater for Dev.
+    Type: String
+    Default: ""
+
 Conditions:
   ProductionResources: {"Fn::Equals" : [{"Ref":"EnvType"}, "Production"]}
   StagingResources: !Equals [ !Ref EnvType, "Staging"]
@@ -32,7 +37,7 @@ Resources:
     Condition: "ProductionResources"
     Properties:
       DBInstanceIdentifier: mynavi-sample-cloudformation-production-postgresql
-      DBName: PostgreSQL
+      DBName: sample_database
       Engine: postgres
       MultiAZ: false
       MasterUsername: !Ref RdsUser
@@ -52,7 +57,7 @@ Resources:
     Condition: "StagingResources"
     Properties:
       DBInstanceIdentifier: mynavi-sample-cloudformation-staging-postgresql
-      DBName: PostgreSQL
+      DBName: sample_database
       Engine: postgres
       MultiAZ: false
       MasterUsername: !Ref RdsUser
@@ -72,18 +77,19 @@ Resources:
     Condition: "DevResources"
     Properties:
       DBInstanceIdentifier: mynavi-sample-cloudformation-dev-postgresql
-      DBName: PostgreSQL
+      DBName: sample_database
       Engine: postgres
       MultiAZ: false
       MasterUsername: !Ref RdsUser
       MasterUserPassword: '{{resolve:ssm-secure:mynavi-sample-cloudformation-rds-password:1}}'
       DBInstanceClass: db.t2.micro
       AllocatedStorage: '20'
-      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBSubnetGroupName: !Ref DBSubnetGroupForDev
       MonitoringInterval: 10
       MonitoringRoleArn: !GetAtt DBMonitorRole.Arn
+      PubliclyAccessible: true
       VPCSecurityGroups:
-        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupRdsPostgres
+        - !Ref SecurityGroupDev
 
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
@@ -92,6 +98,14 @@ Resources:
       SubnetIds:
         - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet1
         - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet2
+
+  DBSubnetGroupForDev:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB Subnet Group for Private Subnet
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet2
 
   DBMonitorRole:
     Type: AWS::IAM::Role

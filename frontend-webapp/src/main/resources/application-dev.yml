@@ -1,0 +1,14 @@
+spring:
+  redis:
+    host: ${REDIS_CLUSTER_ENDPOINT:localhost}
+    port: ${REDIS_CLUSTER_PORT:6379}
+cloud:
+  aws:
+    credentials:
+      profileName:
+      instanceProfile: false
+    stack:
+      auto: false
+    region:
+      auto: false
+      static: ap-northeast-1

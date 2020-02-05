@@ -74,10 +74,16 @@ Outputs:
     Description: ElastiCache Redis
     Value: !Ref ElastiCacheRedis
     Export:
-      Name: !Sub ${VPCName}-ElastiCacheRedis
+      Name: !Sub ${VPCName}-ElastiCacheRedis-${EnvType}
 
   ElastiCacheRedisEndPoint:
     Description: ElastiCache Redis EndPoint
     Value: !GetAtt ElastiCacheRedis.PrimaryEndPoint.Address
     Export:
-      Name: !Sub ${VPCName}-ElastiCacheRedisEndPoint
+      Name: !Sub ${VPCName}-ElastiCacheRedisEndPoint-${EnvType}
+
+  ElastiCacheRedisPort:
+    Description: ElastiCache Redis Port
+    Value:  !FindInMap [CacheDefinitionMap, !Ref EnvType, Port]
+    Export:
+      Name: !Sub ${VPCName}-ElastiCacheRedisPort-${EnvType}

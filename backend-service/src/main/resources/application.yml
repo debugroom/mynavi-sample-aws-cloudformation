@@ -1,0 +1,22 @@
+spring:
+  profiles:
+    active: dev
+  datasource:
+    initialization-mode: always
+    schema: classpath*:/schema-postgresql.sql
+    data: classpath*:/data-postgresql.sql
+server:
+  servlet:
+    context-path: /backend
+cloud:
+  aws:
+    stack:
+      name: mynavi-sample-infra-production
+amazon:
+  dynamodb:
+    region: ap-northeast-1
+    endpoint: https://dynamodb.ap-northeast-1.amazonaws.com
+rds:
+  password: ${RDS_PASSWORD:postgresql}
+app:
+  host: ${HOSTNAME:localhost}

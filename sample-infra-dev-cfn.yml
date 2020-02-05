@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - parent stack for dev environment.
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+  LocalhostIpAddress:
+    Description: CiderBlock paramater for VPC
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    Default: 153.216.110.93/32
+
+Resources:
+  RDSDevStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-rds-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+        SecurityGroupDev: !Ref SecurityGroupRdsPostgresForDev
+
+  DynamoDBDevStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-dynamodb-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+
+  S3DevStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-s3-cfn.yml
+      Parameters:
+        EnvType: !Sub ${EnvType}
+
+  SQSDevStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-sqs-cfn.yml
+      Parameters:
+        EnvType: !Sub ${EnvType}
+
+  SecurityGroupRdsPostgresForDev:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SecurityGroupRdsPostgresForDev
+      GroupDescription: db access only local machine for dev
+      VpcId:
+        Fn::ImportValue: !Sub ${VPCName}-VPCID
+      Tags:
+        - Key: Name
+          Value: !Sub ${VPCName}-SecurityGroupRdsPostgresForDev
+
+  SecurityGroupIngressRdsPostgresForDev:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroupRdsPostgresForDev
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      CidrIp: !Ref LocalhostIpAddress

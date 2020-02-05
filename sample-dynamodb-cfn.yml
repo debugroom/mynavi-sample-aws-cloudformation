@@ -24,7 +24,7 @@ Resources:
   DynamoDBSampleTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !If ["ProductionResources", sample-table,  !If ["StagingResources", "staging_sample-table", "dev_sample-table"]]
+      TableName: !If ["ProductionResources", "sample-table",  !If ["StagingResources", "staging_sample-table", "dev_sample-table"]]
       BillingMode: PROVISIONED
       SSESpecification: !If ["ProductionResources", { "SSEEnabled" : true }, !Ref "AWS::NoValue"]
       AttributeDefinitions:
@@ -42,19 +42,29 @@ Resources:
         WriteCapacityUnits: 5
 
 Outputs:
-  DynamoDBProduction:
+  EnvironmentRegion:
+    Description: Dev Environment Region
+    Value: !Sub ${AWS::Region}
+    Export:
+      Name: !Sub MynaviSampleDynamoDB-${EnvType}-Region
+  DynamoDBServiceEndpoint:
+    Description: DynamoDB service endipoint
+    Value: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
+    Export:
+      Name: !Sub MynaviSampleDynamoDB-${EnvType}-ServiceEndpoint
+  DynamoDBTableProduction:
     Condition: "ProductionResources"
     Description: DynamoDB SampleTable for Production
     Value: !Ref DynamoDBSampleTable
     Export:
       Name: !Sub ${VPCName}-DynamoDBProductionSampleTable
-  DynamoDBStaging:
+  DynamoDBTableStaging:
     Condition: "StagingResources"
     Description: DynamoDB SampleTable for Staging
     Value: !Ref DynamoDBSampleTable
     Export:
       Name: !Sub ${VPCName}-DynamoDBStagingSampleTable
-  DynamoDBDev:
+  DynamoDBTableDev:
     Condition: "DevResources"
     Description: DynamoDB SampleTable for Dev
     Value: !Ref DynamoDBSampleTable
