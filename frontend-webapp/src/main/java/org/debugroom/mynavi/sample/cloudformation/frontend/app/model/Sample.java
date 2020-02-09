@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 public class Sample {
 
+    private String message;
     private List<String> someLists;
 
 }

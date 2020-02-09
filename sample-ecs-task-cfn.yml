@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ECS Task Definition Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml, sample-ecs-cluster-cfn.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+
+Mappings:
+  BackendServiceTaskDefinitionMap:
+    Production:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-backend-service:1.0-RELEASE"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+    Staging:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-backend-service:1.0-SNAPSHOT"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+    Dev:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-backend-service:1.0-SNAPSHOT"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+  FrontendAppTaskDefinitionMap:
+    Production:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-RELEASE"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+    Staging:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-SNAPSHOT"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+    Dev:
+      "Memory" : 1024
+      "Cpu" : 512
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-SNAPSHOT"
+      "ContainerPort" : 8080
+      "HostPort" : 0
+      "ContainerMemory" : 1024
+
+Resources:
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  BackendServiceECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub sample-ecstask-backend-service-${EnvType}
+      RequiresCompatibilities:
+        - EC2
+      Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Memory]
+      Cpu: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Cpu]
+      NetworkMode: bridge
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerName]
+          Image: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerImage]
+          PortMappings:
+            - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerPort]
+              HostPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, HostPort]
+          Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerMemory]
+
+  FrontendAppECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub sample-ecstask-frontend-app-${EnvType}
+      RequiresCompatibilities:
+        - EC2
+      Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, Memory]
+      Cpu: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, Cpu]
+      NetworkMode: bridge
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerName]
+          Image: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerImage]
+          PortMappings:
+            - ContainerPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerPort]
+              HostPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, HostPort]
+          Environment:
+            - Name: SERVICE_DNS
+              Value:
+                Fn::ImportValue: !Sub ${VPCName}-PrivateALBDNS
+          Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerMemory]
+
+Outputs:
+  FrontendAppECSTaskDefinition:
+    Description: Frontend ECS Task Definition
+    Value: !Ref FrontendAppECSTaskDefinition
+    Export:
+      Name: !Sub ${VPCName}-FrontendEcsTaskDefinition-${EnvType]
+
+  BackendECSTaskDefinition:
+    Description: Backend ECS Task Definition
+    Value: !Ref BackendServiceECSTaskDefinition
+    Export:
+      Name: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}

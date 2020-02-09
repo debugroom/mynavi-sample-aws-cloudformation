@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ECS Service Launch Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml, sample-ng-cfn.yml, sample-alb-cfn.yml, sample-tg-cfn.yml, sample-ecs-*.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  DesiredCount:
+    Description: Number of container service to launch in ECS cluster
+    Type: Number
+    Default: 1
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+
+Mappings:
+  BackendServiceAMap:
+    Production:
+      "DesiredCount" : 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort" : 8080
+    Staging:
+      "DesiredCount" : 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort" : 8080
+    Dev:
+      "DesiredCount" : 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort" : 8080
+  FrontendWebAppMap:
+    Production:
+      "DesiredCount": 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerPort" : 8080
+    Staging:
+      "DesiredCount": 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerPort" : 8080
+    Dev:
+      "DesiredCount": 1
+      "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
+      "ContainerPort" : 8080
+
+Resources:
+  FrontendWebAppService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub ${VPCName}-FrontendEcsCluster-${EnvType}
+      DesiredCount: !FindInMap [FrontendWebAppMap, !Ref EnvType, DesiredCount]
+      TaskDefinition:
+        Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskDefinition-${EnvType}
+      LaunchType: EC2
+      LoadBalancers:
+        - ContainerName: !FindInMap [FrontendWebAppMap, !Ref EnvType, ContainerName]
+          ContainerPort: !FindInMap [FrontendWebAppMap, !Ref EnvType, ContainerPort]
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${VPCName}-Frontend-FrontendWebApp-TargetGroup
+
+  BackendServiceA:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster
+      DesiredCount: !FindInMap [BackendServiceAMap, !Ref EnvType, DesiredCount]
+      TaskDefinition:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+      LaunchType: EC2
+      LoadBalancers:
+        - ContainerName: !FindInMap [BackendServiceAMap, !Ref EnvType, ContainerName]
+          ContainerPort: !FindInMap [BackendServiceAMap, !Ref EnvType, ContainerPort]
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${VPCName}-Backend-ServiceA-TargetGroup
+
+Outputs:
+  FrontendWebAppService:
+    Description: Frontend ECS Service
+    Value: !Ref FrontendWebAppService
+    Export:
+      Name: !Sub ${VPCName}-FrontendWebAppService-${EnvType}
+  BackendServiceA:
+    Description: Backend ECS Service
+    Value: !Ref BackendServiceA
+    Export:
+      Name: !Sub ${VPCName}-BackendServiceA-${EnvType}

@@ -13,8 +13,14 @@ Parameters:
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
-    AllowedValues: ["Staging", "Production"]
-    Default: Staging
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+  SecurityGroupDev:
+    Description: The local machine permitted SecurityGroup is needed as paramater for Dev.
+    Type: String
+    Default: ""
+Conditions:
+  DevResources: {"Fn::Equals" : [{"Ref":"EnvType"}, "Dev"]}
 
 Mappings:
   CacheDefinitionMap:
@@ -27,6 +33,14 @@ Mappings:
       "AutomaticFailoverEnabled": true
       "ReplicasPerNodeGroup": 2
     Staging:
+      "CacheInstanceType": "cache.t2.micro"
+      "CacheParameterGroupFamily": "redis5.0"
+      "EngineVersion": "5.0.3"
+      "Port": 6379
+      "ClusterEnabled" : "no"
+      "AutomaticFailoverEnabled": false
+      "ReplicasPerNodeGroup": 1
+    Dev:
       "CacheInstanceType": "cache.t2.micro"
       "CacheParameterGroupFamily": "redis5.0"
       "EngineVersion": "5.0.3"
@@ -68,6 +82,7 @@ Resources:
       CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupElastiCacheRedis
+        - !If ["DevResources", !Ref SecurityGroupDev, !Ref "AWS::NoValue"]
 
 Outputs:
   ElastiCacheRedis:

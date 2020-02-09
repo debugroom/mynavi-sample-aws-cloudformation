@@ -44,8 +44,8 @@ public class BackendController {
     }
 
     @PostMapping("/samples/new")
-    public SampleResource addSample(){
-        return sampleService.addSample();
+    public SampleResource addSample(String message){
+        return sampleService.addSample(message);
     }
 
 }

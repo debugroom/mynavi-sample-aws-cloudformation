@@ -2,6 +2,8 @@
 
 #stack_name="mynavi-sample-infra-staging"
 stack_name="mynavi-sample-infra-dev"
+#stack_name="mynavi-sample-ecs-redisclient"
+#stack_name="mynavi-sample-ecs-cluster"
 #stack_name="mynavi-sample-sqs"
 #stack_name="mynavi-sample-s3"
 #stack_name="mynavi-sample-elasticache"

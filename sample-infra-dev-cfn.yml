@@ -21,7 +21,7 @@ Parameters:
     MinLength: 9
     MaxLength: 18
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-    Default: 153.216.110.93/32
+    Default: 172.200.2.58/32
 
 Resources:
   RDSDevStack:
@@ -40,6 +40,17 @@ Resources:
       Parameters:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
+
+# ElastiCache is not permitted public access, use local redis except dev environmant in vpc.
+  ElastiCacheDevStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-elasticache-cfn.yml
+      Parameters:
+        VPCName: !Sub ${VPCName}
+        EnvType: !Sub ${EnvType}
+        SecurityGroupDev: !Ref SecurityGroupElastiCacheRedisForDev
+
 
   S3DevStack:
     Type: AWS::CloudFormation::Stack
@@ -73,4 +84,25 @@ Resources:
       IpProtocol: tcp
       FromPort: 5432
       ToPort: 5432
+      CidrIp: !Ref LocalhostIpAddress
+
+
+  SecurityGroupElastiCacheRedisForDev:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SecurityGroupElastiCacheForDev
+      GroupDescription: elasticache access only local machine for dev
+      VpcId:
+        Fn::ImportValue: !Sub ${VPCName}-VPCID
+      Tags:
+        - Key: Name
+          Value: !Sub ${VPCName}-SecurityGroupElastiCacheRedisForDev
+
+  SecurityGroupIngressElastiCacheRedisForDev:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroupElastiCacheRedisForDev
+      IpProtocol: tcp
+      FromPort: 6379
+      ToPort: 6379
       CidrIp: !Ref LocalhostIpAddress

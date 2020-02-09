@@ -10,6 +10,6 @@ public interface SampleService {
 
     public List<User> getUsers();
     public List<SampleResource> getSamples();
-    public SampleResource addSample();
+    public SampleResource addSample(String message);
 
 }

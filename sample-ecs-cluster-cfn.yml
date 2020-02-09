@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ECS Cluster Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml, sample-ng-cfn.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  ECSAMI:
+    Description: AMI ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues:
+      - Dev
+      - Staging
+      - Production
+    Default: Dev
+
+Mappings:
+  FrontendClusterDefinitionMap:
+    Production:
+      "InstanceType" : "r4.large"
+      "DesiredCapacity" : 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName" : "test"
+    Staging:
+      "InstanceType": "r4.large"
+      "DesiredCapacity": 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName": "test"
+    Dev:
+      "InstanceType": "r4.large"
+      "DesiredCapacity": 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName": "test"
+  BackendClusterDefinitionMap:
+    Production:
+      "InstanceType" : "r4.large"
+      "DesiredCapacity" : 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName" : "test"
+    Staging:
+      "InstanceType": "r4.large"
+      "DesiredCapacity": 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName": "test"
+    Dev:
+      "InstanceType": "r4.large"
+      "DesiredCapacity": 1
+      "EC2InstanceMaxSizeOfECS": 3
+      "KeyPairName": "test"
+
+Resources:
+  ECSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+
+  IamInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ECSRole
+
+  FrontendECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub sample-frontend-cluster-${EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub FrontendECSCluster-${EnvType}
+
+  BackendECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub sample-backend-cluster-${EnvType}
+      Tags:
+        - Key: Name
+          Value: !Sub BackendECSCluster-${EnvType}
+
+  FrontendECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${VPCName}-PublicSubnet2
+      LaunchConfigurationName: !Ref FrontendECSLaunchConfiguration
+      MinSize: '0'
+      MaxSize: !FindInMap [FrontendClusterDefinitionMap, !Ref EnvType, EC2InstanceMaxSizeOfECS]
+      DesiredCapacity: !FindInMap [FrontendClusterDefinitionMap, !Ref EnvType, DesiredCapacity]
+      Tags:
+        - Key: Name
+          Value: !Sub FrontendECSCluster-${EnvType}
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
+
+  FrontendECSLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref ECSAMI
+      InstanceType: !FindInMap [FrontendClusterDefinitionMap, !Ref EnvType, InstanceType]
+      IamInstanceProfile: !Ref IamInstanceProfile
+      KeyName: !FindInMap [FrontendClusterDefinitionMap, !Ref EnvType, KeyPairName]
+      SecurityGroups:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupFrontendEcsCluster
+      AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${FrontendECSCluster} >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource FrontendECSAutoScalingGroup --region ${AWS::Region}
+
+  BackendECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet1
+        - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet2
+      LaunchConfigurationName: !Ref BackendECSLaunchConfiguration
+      MinSize: '0'
+      MaxSize: !FindInMap [BackendClusterDefinitionMap, !Ref EnvType, EC2InstanceMaxSizeOfECS]
+      DesiredCapacity: !FindInMap [BackendClusterDefinitionMap, !Ref EnvType, DesiredCapacity]
+      Tags:
+        - Key: Name
+          Value: !Sub BackendECSCluster-${EnvType}
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
+
+  BackendECSLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref ECSAMI
+      InstanceType: !FindInMap [BackendClusterDefinitionMap, !Ref EnvType, InstanceType]
+      IamInstanceProfile: !Ref IamInstanceProfile
+      KeyName: !FindInMap [BackendClusterDefinitionMap, !Ref EnvType, KeyPairName]
+      SecurityGroups:
+        - Fn::ImportValue: !Sub ${VPCName}-SecurityGroupBackendEcsCluster
+      AssociatePublicIpAddress: false
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${BackendECSCluster} >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource BackendECSAutoScalingGroup --region ${AWS::Region}
+
+Outputs:
+  FrontendECSCluster:
+    Description: Frontend ECS Cluster
+    Value: !Ref FrontendECSCluster
+    Export:
+      Name: !Sub ${VPCName}-FrontendEcsCluster-${EnvType}
+
+  BackendECSCluster:
+    Description: Backend ECS Cluster
+    Value: !Ref BackendECSCluster
+    Export:
+      Name: !Sub ${VPCName}-BackendEcsCluster-${EnvType}

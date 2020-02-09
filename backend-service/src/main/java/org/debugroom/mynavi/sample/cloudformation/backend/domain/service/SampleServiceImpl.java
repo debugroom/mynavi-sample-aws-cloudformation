@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class SampleServiceImpl implements SampleService{
 
-    @Autowired
+    @Autowired(required = false)
     SampleRepository sampleRepository;
 
     @Autowired
@@ -36,11 +36,12 @@ public class SampleServiceImpl implements SampleService{
     }
 
     @Override
-    public SampleResource addSample() {
+    public SampleResource addSample(String message) {
         return sampleRepository.save(SampleTable.builder()
                 .samplePartitionKey(UUID.randomUUID().toString())
                 .sampleSortKey("1")
-                .sampleText("add At " + (new Timestamp(System.currentTimeMillis()).toString()))
+                .sampleText("[message] : " + message +
+                        " [added At] " + (new Timestamp(System.currentTimeMillis()).toString()))
                 .build());
     }
 

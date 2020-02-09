@@ -1,7 +1,5 @@
-spring:
-  redis:
-    host: ${REDIS_CLUSTER_ENDPOINT:localhost}
-    port: ${REDIS_CLUSTER_PORT:6379}
+server:
+  port: 8081
 cloud:
   aws:
     credentials:
@@ -12,3 +10,8 @@ cloud:
     region:
       auto: false
       static: ap-northeast-1
+#ElasitiCache is not permitted public access, use local redis server except dev environment in vpc.
+#spring:
+#  redis:
+#    host: ${REDIS_CLUSTER_ENDPOINT:localhost}
+#    port: ${REDIS_CLUSTER_PORT:6379}

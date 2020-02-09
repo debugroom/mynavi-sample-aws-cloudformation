@@ -52,8 +52,9 @@ Outputs:
       Name: !Sub MynaviSampleSQS-${EnvType}-ServiceEndpoint
 
   SQSSampleQueue:
-    Description: SQS sample queue
-    Value: !Ref SQSSampleQueue
+    Description: SQS sample queue name
+    Value: !FindInMap [SQSDefinitionMap, !Ref EnvType, QueueName]
     Export:
       Name: !Sub MynaviSampleSQS-${EnvType}
+
 

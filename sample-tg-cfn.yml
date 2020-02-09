@@ -88,4 +88,4 @@ Outputs:
     Description: TargetGroup Service
     Value: !Ref TargetGroup
     Export:
-      Name: !Sub ${VPCName}-${SubnetType}-${ServiceName}
+      Name: !Sub ${VPCName}-${SubnetType}-${ServiceName}-TargetGroup
