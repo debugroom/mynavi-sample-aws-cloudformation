@@ -13,18 +13,18 @@ Parameters:
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
-    AllowedValues: ["Dev", "Staging", "Production"]
+    AllowedValues: ["Staging"]
     Default: Staging
 
 Resources:
-  NATGatewayStack:
+  NATGatewayStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-ng-cfn.yml
       Parameters:
         VPCName: !Sub ${VPCName}
 
-  ALBStack:
+  ALBStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-alb-cfn.yml
@@ -32,31 +32,31 @@ Resources:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
 
-  BackendServiceATargetGroupStack:
+  BackendUserServiceTargetGroupStagingStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: ALBStack
+    DependsOn: ALBStagingStack
     Properties:
       TemplateURL: ./sample-tg-cfn.yml
       Parameters:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
         SubnetType: Backend
-        ServiceName: BackendServiceA
+        ServiceName: BackendUserService
 
-  BackendServiceBTargetGroupStack:
+  BackendSampleServiceTargetGroupStagingStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: ALBStack
+    DependsOn: ALBStagingStack
     Properties:
       TemplateURL: ./sample-tg-cfn.yml
       Parameters:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
         SubnetType: Backend
-        ServiceName: BackendServiceB
+        ServiceName: BackendSampleService
 
-  FrontendWebAppTargetGroupStack:
+  FrontendWebAppTargetGroupStagingStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: ALBStack
+    DependsOn: ALBStagingStack
     Properties:
       TemplateURL: ./sample-tg-cfn.yml
       Parameters:
@@ -65,7 +65,7 @@ Resources:
         SubnetType: Frontend
         ServiceName: FrontendWebApp
 
-  RDSStack:
+  RDSStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-rds-cfn.yml
@@ -73,7 +73,7 @@ Resources:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
 
-  DynamoDBStack:
+  DynamoDBStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-dynamodb-cfn.yml
@@ -81,7 +81,7 @@ Resources:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
 
-  ElastiCacheStack:
+  ElastiCacheStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-elasticache-cfn.yml
@@ -89,26 +89,24 @@ Resources:
         VPCName: !Sub ${VPCName}
         EnvType: !Sub ${EnvType}
 
-  S3Stack:
+  S3StagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-s3-cfn.yml
       Parameters:
         EnvType: !Sub ${EnvType}
 
-  SQSStack:
+  SQSStagingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: ./sample-sqs-cfn.yml
       Parameters:
         EnvType: !Sub ${EnvType}
 
-Outputs:
-  FrontendALBDNS:
-    Value: !GetAtt ALBStack.Outputs.FrontendALBDNS
+  ECSClusterStagingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./sample-ecs-cluster-cfn.yml
+      Parameters:
+        EnvType: !Sub ${EnvType}
 
-  BackendALBDNS:
-    Value: !GetAtt ALBStack.Outputs.BackendALBDNS
-
-  ElastiCacheRedisEndPoint:
-    Value: !GetAtt ElastiCacheStack.Outputs.ElastiCacheRedisEndPoint

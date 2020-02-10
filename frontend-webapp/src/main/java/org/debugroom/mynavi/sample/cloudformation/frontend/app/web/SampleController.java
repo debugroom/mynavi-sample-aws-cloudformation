@@ -76,4 +76,10 @@ public class SampleController {
                sampleOrchestrationService.getSamples());
     }
 
+    @GetMapping("/healthcheck")
+    @ResponseBody
+    public ResponseEntity<String> healthCheck(){
+        return  ResponseEntity.ok().body("I'm healthy. : " +host);
+    }
+
 }

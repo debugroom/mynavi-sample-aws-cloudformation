@@ -17,7 +17,7 @@ import org.debugroom.mynavi.sample.cloudformation.common.model.SampleResource;
 import org.debugroom.mynavi.sample.cloudformation.common.model.UserResource;
 
 @RestController
-@RequestMapping("api/v1")
+@RequestMapping("backend/api/v1")
 public class BackendController {
 
     private static final String HEADER_ID_KEY_NAME = "X-HostName";
@@ -46,6 +46,11 @@ public class BackendController {
     @PostMapping("/samples/new")
     public SampleResource addSample(String message){
         return sampleService.addSample(message);
+    }
+
+    @GetMapping("/healthcheck")
+    public String getResponse(){
+        return "I'm healthy. : " + host;
     }
 
 }

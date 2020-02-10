@@ -5,9 +5,6 @@ spring:
     initialization-mode: always
     schema: classpath*:/schema-postgresql.sql
     data: classpath*:/data-postgresql.sql
-server:
-  servlet:
-    context-path: /backend
 cloud:
   aws:
     stack:

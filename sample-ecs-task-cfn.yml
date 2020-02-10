@@ -47,7 +47,7 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
-      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-RELEASE"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-webapp:1.0-RELEASE"
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
@@ -55,7 +55,7 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
-      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-SNAPSHOT"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-webapp:1.0-SNAPSHOT"
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
@@ -63,7 +63,7 @@ Mappings:
       "Memory" : 1024
       "Cpu" : 512
       "ContainerName" : "mynavi-sample-cloudformation-ecs-frontend-app"
-      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-app:1.0-SNAPSHOT"
+      "ContainerImage" : "debugroom/mynavi-sample-cloudformation-ecs-frontend-webapp:1.0-SNAPSHOT"
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024

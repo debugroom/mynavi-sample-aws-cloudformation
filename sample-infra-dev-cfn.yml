@@ -13,7 +13,7 @@ Parameters:
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
-    AllowedValues: ["Dev", "Staging", "Production"]
+    AllowedValues: ["Dev"]
     Default: Dev
   LocalhostIpAddress:
     Description: CiderBlock paramater for VPC

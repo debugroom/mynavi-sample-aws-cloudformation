@@ -8,6 +8,7 @@ import com.amazonaws.services.cloudformation.model.ListExportsResult;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 
+import org.debugroom.mynavi.sample.cloudformation.common.apinfra.cloud.aws.CloudFormationStackInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.aws.core.env.ResourceIdResolver;
 import org.springframework.cloud.aws.jdbc.config.annotation.EnableRdsInstance;
@@ -26,33 +27,25 @@ import java.util.stream.Collectors;
 @Configuration
 public class ProductionConfig {
 
-    @Autowired
-    AmazonCloudFormationClient amazonCloudFormationClient;
+    private static final String DYNAMODB_STACK_NAME = "DynamoDBProductionStack";
+    private static final String DYNAMODB_ENDPOINT_EXPORT = "MynaviSampleDynamoDB-Production-ServiceEndpoint";
+    private static final String DYNAMODB_REGION_EXPORT = "MynaviSampleDynamoDB-Production-Region";
 
-    @Autowired(required = false)
-    ResourceIdResolver resourceIdResolver;
+    @Bean
+    CloudFormationStackInfo cloudFormationStackInfo(){
+        return new CloudFormationStackInfo();
+    }
 
     @Bean
     public AmazonDynamoDB amazonDynamoDB() {
-        ListExportsResult listExportsResult = amazonCloudFormationClient
-                .listExports(new ListExportsRequest());
-        List<Export> exportList = listExportsResult.getExports();
-        List<Export> dynamoDBStackExportList = exportList.stream()
-                .filter(export -> export.getExportingStackId().equals(
-                        resourceIdResolver.resolveToPhysicalResourceId("DynamoDBProductionStack")))
-                .collect(Collectors.toList());
-        Export dynamoDBServiceEndpointExport = dynamoDBStackExportList.stream()
-                .filter(export -> export.getName().equals("MynaviSampleDynamoDB-Production-ServiceEndpoint"))
-                .findFirst().get();
-        Export environmentRegionExport = dynamoDBStackExportList.stream()
-                .filter(export -> export.getName().equals("MynaviSampleDynamoDB-Production-Region"))
-                .findFirst().get();
         return AmazonDynamoDBClientBuilder.standard()
                 .withEndpointConfiguration(
                         new AwsClientBuilder.EndpointConfiguration(
-                                dynamoDBServiceEndpointExport.getValue(), environmentRegionExport.getValue()))
+                                cloudFormationStackInfo().getExportValue(
+                                        DYNAMODB_STACK_NAME, DYNAMODB_ENDPOINT_EXPORT),
+                                cloudFormationStackInfo().getExportValue(
+                                        DYNAMODB_STACK_NAME, DYNAMODB_REGION_EXPORT)))
                 .build();
-
     }
 
 }

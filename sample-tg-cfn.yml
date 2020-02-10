@@ -6,15 +6,15 @@ Mappings:
   TargetGroupDefinitionMap:
     FrontendWebApp:
       "PathPattern": "/frontend/*"
-      "HealthCheckPath": "/frontend/index.html"
+      "HealthCheckPath": "/frontend/healthcheck"
       "Priority": 1
-    BackendServiceA:
-      "PathPattern": "/backend/serviceA/*"
-      "HealthCheckPath": "/index.html"
+    BackendUserService:
+      "PathPattern": "/backend/user*"
+      "HealthCheckPath": "/backend/api/v1/healthcheck"
       "Priority": 1
-    BackendServiceB:
-      "PathPattern": "/backend/serviceB/*"
-      "HealthCheckPath": "/index.html"
+    BackendSampleService:
+      "PathPattern": "/backend/sample*"
+      "HealthCheckPath": "/backend/api/v1/healthcheck"
       "Priority": 2
   DeployEnvironmentMap:
     Production:
@@ -51,7 +51,7 @@ Parameters:
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
-    Default: BackendServiceA
+    Default: BackendUserService
 
 Resources:
   TargetGroup:

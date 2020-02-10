@@ -25,6 +25,15 @@ import org.debugroom.mynavi.sample.cloudformation.common.apinfra.log.interceptor
 public class DevConfig {
 
     private static final String BACKEND_SERVICE_DNS = "http://localhost:8080";
+    private static final String S3_STACK_NAME = "S3DevStack";
+    private static final String S3_BUCKET_EXPORT = "MynaviSampleS3Bucket-Dev";
+    private static final String SQS_STACK_NAME = "SQSDevStack";
+    private static final String SQS_QUEUE_EXPORT = "MynaviSampleSQS-Dev";
+    private static final String SQS_ENDPOINT_EXPORT = "MynaviSampleSQS-Dev-ServiceEndpoint";
+    private static final String ELASTICACHE_STACK_NAME = "ElastiCacheDevStack";
+    private static final String ELASTICACHE_ENDPOINT_EXPORT = "mynavi-sample-cloudformation-vpc-ElastiCacheRedisEndPoint-Dev";
+    private static final String ELASTICACHE_PORT_EXPORT = "mynavi-sample-cloudformation-vpc-ElastiCacheRedisPort-Dev";
+
 
     @Value("${cloud.aws.region.static}")
     private String region;
@@ -38,8 +47,8 @@ public class DevConfig {
     @Bean
     S3Info s3Info(){
         return S3Info.builder()
-                .bucketName(cloudFormationStackInfo().getExportValue(
-                        "S3DevStack", "MynaviSampleS3Bucket-Dev"))
+                .bucketName(cloudFormationStackInfo()
+                        .getExportValue(S3_STACK_NAME, S3_BUCKET_EXPORT))
                 .build();
     }
 
@@ -47,7 +56,7 @@ public class DevConfig {
     SQSInfo sqsInfo(){
         return SQSInfo.builder()
                 .queueName(cloudFormationStackInfo().getExportValue(
-                        "SQSDevStack", "MynaviSampleSQS-Dev"))
+                        SQS_STACK_NAME, SQS_QUEUE_EXPORT))
                 .build();
     }
 
@@ -58,7 +67,7 @@ public class DevConfig {
     public AwsClientBuilder.EndpointConfiguration endpointConfiguration(){
         return new AwsClientBuilder.EndpointConfiguration(
                 cloudFormationStackInfo().getExportValue(
-                        "SQSDevStack", "MynaviSampleSQS-Dev-ServiceEndpoint"), region);
+                        SQS_STACK_NAME, SQS_ENDPOINT_EXPORT), region);
     }
 
     @Bean
@@ -84,9 +93,9 @@ public class DevConfig {
     public LettuceConnectionFactory lettuceConnectionFactory(){
         return new LettuceConnectionFactory(
                 cloudFormationStackInfo().getExportValue(
-     "ElastiCacheDevStack", "mynavi-sample-cloudformation-vpc-ElastiCacheRedisEndPoint-Dev"),
-                Integer.valueOf(cloudFormationStackInfo().getExportValue(
-     "ElastiCacheDevStack", "mynavi-sample-cloudformation-vpc-ElastiCacheRedisPort-Dev")));
+                        ELASTICACHE_STACK_NAME, ELASTICACHE_ENDPOINT_EXPORT),
+                    Integer.valueOf(cloudFormationStackInfo().getExportValue(
+                        ELASTICACHE_STACK_NAME, ELASTICACHE_PORT_EXPORT)));
     }
 
 }

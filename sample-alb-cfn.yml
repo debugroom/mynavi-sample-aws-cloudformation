@@ -34,7 +34,7 @@ Parameters:
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[-¥.¥/a-zA-Z0-9]*$
-    Default: /frontend/index.html
+    Default: /frontend/portal
 
   BackendDefaultHealthCheckPath:
     Description: Backend Service Default health check path
@@ -42,7 +42,7 @@ Parameters:
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[-¥.¥/a-zA-Z0-9]*$
-    Default: /backend/api/v1/users
+    Default: /backend/api/v1/healthcheck
 
 Resources:
   FrontendALB:
