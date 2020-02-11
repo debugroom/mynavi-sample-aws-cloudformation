@@ -51,6 +51,12 @@ Outputs:
     Export:
       Name: !Sub MynaviSampleSQS-${EnvType}-ServiceEndpoint
 
+  SQSServiceRegion:
+    Description: SQS service region
+    Value: !Sub ${AWS::Region}
+    Export:
+      Name: !Sub MynaviSampleSQS-${EnvType}-Region
+
   SQSSampleQueue:
     Description: SQS sample queue name
     Value: !FindInMap [SQSDefinitionMap, !Ref EnvType, QueueName]

@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ECS IAM Role for Frontend ECS Container Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml, sample-ng-cfn.yml, sample-alb-cfn.yml, sample-tg-cfn.yml, sample-ecs-cluster-cfn.yml, sample-ecs-task-cfn.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+
+Resources:
+  CloudFormationAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-CloudFormationAccessPolicy-frontend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudformation:*"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}
+
+  S3AccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-S3AccessPolicy-frontend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:*"
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - Fn::ImportValue: !Sub MynaviSampleS3Bucket-Arn-${EnvType}
+                    - "/*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}
+
+  SQSAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-SQSAccessPolicy-frontend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sqs:*"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}
+
+  ElastiCacheAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-ElastiCacheAccessPolicy-frontend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "elasticache:*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "iam:CreateServiceLinkedRole"
+            Resource: "*arn:aws:iam::*:role/aws-service-role/elasticache.amazonaws.com/AWSServiceRoleForElastiCache"
+            Condition:
+              StringLike:
+                iam:AWSServiceName : "elasticache.amazonaws.com"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}
+
+  SSMAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-SSMAccessPolicy-frontend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudwatch:PutMetricData"
+              - "ds:CreateComputer"
+              - "ds:DescribeDirectories"
+              - "ec2:DescribeInstanceStatus"
+              - "logs:*"
+              - "ssm:*"
+              - "ec2messages:*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "iam:CreateServiceLinkedRole"
+            Resource: "arn:aws:iam::*:role/aws-service-role/ssm.amazonaws.com/AWSServiceRoleForAmazonSSM*"
+            Condition:
+              StringLike:
+                iam:AWSServiceName : "ssm.amazonaws.com"
+          - Effect: Allow
+            Action:
+              - "iam:DeleteServiceLinkedRole"
+              - "iam:GetServiceLinkedRoleDeletionStatus"
+            Resource: "arn:aws:iam::*:role/aws-service-role/ssm.amazonaws.com/AWSServiceRoleForAmazonSSM*"
+          - Effect: Allow
+            Action:
+              - "ssmmessages:CreateControlChannel"
+              - "ssmmessages:CreateDataChannel"
+              - "ssmmessages:OpenControlChannel"
+              - "ssmmessages:OpenDataChannel"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}

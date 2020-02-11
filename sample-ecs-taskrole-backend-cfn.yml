@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sample CloudFormation template with YAML - ECS Service Launch Depends on sample-vpc-cfn.yml, sample-sg-cfn.yml, sample-ng-cfn.yml, sample-alb-cfn.yml, sample-tg-cfn.yml, sample-ecs-*.yml
+
+Parameters:
+  VPCName:
+    Description: Target VPC Stack Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: mynavi-sample-cloudformation-vpc
+  EnvType:
+    Description: Which environments to deploy your service.
+    Type: String
+    AllowedValues: ["Dev", "Staging", "Production"]
+    Default: Dev
+
+Resources:
+  CloudFormationAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-CloudFormationAccessPolicy-backend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudformation:*"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}
+
+  SQSAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-SQSAccessPolicy-backend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sqs:*"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}
+
+  DynamoDBAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-DynamoDBAccessPolicy-backend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:*"
+              - "dax:*"
+              - "application-autoscaling:DeleteScalingPolicy"
+              - "application-autoscaling:DeregisterScalableTarget"
+              - "application-autoscaling:DescribeScalableTargets"
+              - "application-autoscaling:DescribeScalingActivities"
+              - "application-autoscaling:DescribeScalingPolicies"
+              - "application-autoscaling:PutScalingPolicy"
+              - "application-autoscaling:RegisterScalableTarget"
+              - "cloudwatch:DeleteAlarms"
+              - "cloudwatch:DescribeAlarmHistory"
+              - "cloudwatch:DescribeAlarms"
+              - "cloudwatch:DescribeAlarmsForMetric"
+              - "cloudwatch:GetMetricStatistics"
+              - "cloudwatch:ListMetrics"
+              - "cloudwatch:PutMetricAlarm"
+              - "datapipeline:ActivatePipeline"
+              - "datapipeline:CreatePipeline"
+              - "datapipeline:DeletePipeline"
+              - "datapipeline:DescribeObjects"
+              - "datapipeline:DescribePipelines"
+              - "datapipeline:GetPipelineDefinition"
+              - "datapipeline:ListPipelines"
+              - "datapipeline:PutPipelineDefinition"
+              - "datapipeline:QueryObjects"
+              - "ec2:DescribeVpcs"
+              - "ec2:DescribeSubnets"
+              - "ec2:DescribeSecurityGroups"
+              - "iam:GetRole"
+              - "iam:ListRoles"
+              - "kms:DescribeKey"
+              - "kms:ListAliases"
+              - "sns:CreateTopic"
+              - "sns:DeleteTopic"
+              - "sns:ListSubscriptions"
+              - "sns:ListSubscriptionsByTopic"
+              - "sns:ListTopics"
+              - "sns:Subscribe"
+              - "sns:Unsubscribe"
+              - "sns:SetTopicAttributes"
+              - "lambda:CreateFunction"
+              - "lambda:ListFunctions"
+              - "lambda:ListEventSourceMappings"
+              - "lambda:CreateEventSourceMapping"
+              - "lambda:DeleteEventSourceMapping"
+              - "lambda:GetFunctionConfiguration"
+              - "lambda:DeleteFunction"
+              - "resource-groups:ListGroups"
+              - "resource-groups:ListGroupResources"
+              - "resource-groups:GetGroup"
+              - "resource-groups:GetGroupQuery"
+              - "resource-groups:DeleteGroup"
+              - "resource-groups:CreateGroup"
+              - "tag:GetResources"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}
+
+  RDSAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-RDSAccessPolicy-backend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "rds:*"
+              - "application-autoscaling:DeleteScalingPolicy"
+              - "application-autoscaling:DeregisterScalableTarget"
+              - "application-autoscaling:DescribeScalableTargets"
+              - "application-autoscaling:DescribeScalingActivities"
+              - "application-autoscaling:DescribeScalingPolicies"
+              - "application-autoscaling:PutScalingPolicy"
+              - "application-autoscaling:RegisterScalableTarget"
+              - "cloudwatch:DescribeAlarms"
+              - "cloudwatch:GetMetricStatistics"
+              - "cloudwatch:PutMetricAlarm"
+              - "cloudwatch:DeleteAlarms"
+              - "ec2:DescribeAccountAttributes"
+              - "ec2:DescribeAvailabilityZones"
+              - "ec2:DescribeInternetGateways"
+              - "ec2:DescribeSecurityGroups"
+              - "ec2:DescribeSubnets"
+              - "ec2:DescribeVpcAttribute"
+              - "ec2:DescribeVpcs"
+              - "sns:ListSubscriptions"
+              - "sns:ListTopics"
+              - "sns:Publish"
+              - "logs:DescribeLogStreams"
+              - "logs:GetLogEvents"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}
+
+  SSMAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub Mynavi-Sample-ElastiCacheAccessPolicy-backend-${EnvType}
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudwatch:PutMetricData"
+              - "ds:CreateComputer"
+              - "ds:DescribeDirectories"
+              - "ec2:DescribeInstanceStatus"
+              - "logs:*"
+              - "ssm:*"
+              - "ec2messages:*"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "iam:CreateServiceLinkedRole"
+            Resource: "arn:aws:iam::*:role/aws-service-role/ssm.amazonaws.com/AWSServiceRoleForAmazonSSM*"
+            Condition:
+              StringLike:
+                iam:AWSServiceName : "ssm.amazonaws.com"
+          - Effect: Allow
+            Action:
+              - "iam:DeleteServiceLinkedRole"
+              - "iam:GetServiceLinkedRoleDeletionStatus"
+            Resource: "arn:aws:iam::*:role/aws-service-role/ssm.amazonaws.com/AWSServiceRoleForAmazonSSM*"
+          - Effect: Allow
+            Action:
+              - "ssmmessages:CreateControlChannel"
+              - "ssmmessages:CreateDataChannel"
+              - "ssmmessages:OpenControlChannel"
+              - "ssmmessages:OpenDataChannel"
+            Resource: "*"
+      Roles:
+        - Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}

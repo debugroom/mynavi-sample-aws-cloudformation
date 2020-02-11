@@ -105,8 +105,30 @@ Resources:
 
   ECSClusterStagingStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: NATGatewayStagingStack
     Properties:
       TemplateURL: ./sample-ecs-cluster-cfn.yml
       Parameters:
         EnvType: !Sub ${EnvType}
+
+#  ECSTaskDefinitionStagingStack:
+#    Type: AWS::CloudFormation::Stack
+#    DependsOn:
+#      - ECSClusterStagingStack
+#    Properties:
+#      TemplateURL: ./sample-ecs-task-cfn.yml
+#      Parameters:
+#        EnvType: !Sub ${EnvType}
+
+#  ECSServiceStagingStack:
+#    Type: AWS::CloudFormation::Stack
+#    DependsOn:
+#      - ECSTaskDefinitionStagingStack
+#      - BackendSampleServiceTargetGroupStagingStack
+#      - BackendUserServiceTargetGroupStagingStack
+#      - FrontendWebAppTargetGroupStagingStack
+#    Properties:
+#      TemplateURL: ./sample-ecs-service-cfn.yml
+#      Parameters:
+#        EnvType: !Sub ${EnvType}
 

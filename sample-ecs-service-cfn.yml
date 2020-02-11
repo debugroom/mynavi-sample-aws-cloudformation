@@ -10,10 +10,6 @@ Parameters:
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
     Default: mynavi-sample-cloudformation-vpc
-  DesiredCount:
-    Description: Number of container service to launch in ECS cluster
-    Type: Number
-    Default: 1
   EnvType:
     Description: Which environments to deploy your service.
     Type: String
@@ -21,7 +17,20 @@ Parameters:
     Default: Dev
 
 Mappings:
-  BackendServiceAMap:
+  BackendUserServiceMap:
+    Production:
+      "DesiredCount": 1
+      "ContainerName": "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort": 8080
+    Staging:
+      "DesiredCount": 1
+      "ContainerName": "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort": 8080
+    Dev:
+      "DesiredCount": 1
+      "ContainerName": "mynavi-sample-cloudformation-ecs-backend-service"
+      "ContainerPort": 8080
+  BackendSampleServiceMap:
     Production:
       "DesiredCount" : 1
       "ContainerName" : "mynavi-sample-cloudformation-ecs-backend-service"
@@ -62,22 +71,37 @@ Resources:
         - ContainerName: !FindInMap [FrontendWebAppMap, !Ref EnvType, ContainerName]
           ContainerPort: !FindInMap [FrontendWebAppMap, !Ref EnvType, ContainerPort]
           TargetGroupArn:
-            Fn::ImportValue: !Sub ${VPCName}-Frontend-FrontendWebApp-TargetGroup
+            Fn::ImportValue: !Sub ${VPCName}-Frontend-FrontendWebApp-TargetGroup-${EnvType}
 
-  BackendServiceA:
-    Type: AWS::ECS::Service
-    Properties:
-      Cluster:
-        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster
-      DesiredCount: !FindInMap [BackendServiceAMap, !Ref EnvType, DesiredCount]
-      TaskDefinition:
-        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
-      LaunchType: EC2
-      LoadBalancers:
-        - ContainerName: !FindInMap [BackendServiceAMap, !Ref EnvType, ContainerName]
-          ContainerPort: !FindInMap [BackendServiceAMap, !Ref EnvType, ContainerPort]
-          TargetGroupArn:
-            Fn::ImportValue: !Sub ${VPCName}-Backend-ServiceA-TargetGroup
+#  BackendUserService:
+#    Type: AWS::ECS::Service
+#    Properties:
+#      Cluster:
+#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
+#      DesiredCount: !FindInMap [BackendUserServiceMap, !Ref EnvType, DesiredCount]
+#      TaskDefinition:
+#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+#      LaunchType: EC2
+#      LoadBalancers:
+#        - ContainerName: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerName]
+#          ContainerPort: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerPort]
+#          TargetGroupArn:
+#            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendUserService-TargetGroup-${EnvType}
+
+#  BackendSampleService:
+#    Type: AWS::ECS::Service
+#    Properties:
+#      Cluster:
+#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
+#      DesiredCount: !FindInMap [BackendSampleServiceMap, !Ref EnvType, DesiredCount]
+#      TaskDefinition:
+#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+#      LaunchType: EC2
+#      LoadBalancers:
+#        - ContainerName: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerName]
+#          ContainerPort: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerPort]
+#          TargetGroupArn:
+#            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendSampleService-TargetGroup-${EnvType}
 
 Outputs:
   FrontendWebAppService:
@@ -85,8 +109,13 @@ Outputs:
     Value: !Ref FrontendWebAppService
     Export:
       Name: !Sub ${VPCName}-FrontendWebAppService-${EnvType}
-  BackendServiceA:
-    Description: Backend ECS Service
-    Value: !Ref BackendServiceA
-    Export:
-      Name: !Sub ${VPCName}-BackendServiceA-${EnvType}
+#  BackendUserService:
+#    Description: Backend ECS Service
+#    Value: !Ref BackendUserService
+#    Export:
+#      Name: !Sub ${VPCName}-BackendUserService-${EnvType}
+#  BackendSampleService:
+#    Description: Backend ECS Service
+#    Value: !Ref BackendSampleService
+#    Export:
+#      Name: !Sub ${VPCName}-BackendSampleService-${EnvType}

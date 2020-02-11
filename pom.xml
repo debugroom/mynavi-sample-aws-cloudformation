@@ -6,6 +6,7 @@
     <artifactId>mynavi-sample-cloudformation</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>mynavi-sample-cloudformation</name>
+    <packaging>pom</packaging>
     <modules>
         <module>frontend-webapp</module>
         <module>backend-service</module>

@@ -80,7 +80,7 @@ Resources:
             Values:
               - !FindInMap [TargetGroupDefinitionMap, !Ref ServiceName, PathPattern]
       ListenerArn:
-        Fn::ImportValue: !Sub ${VPCName}-${SubnetType}-ALB-Listener
+        Fn::ImportValue: !Sub ${VPCName}-${SubnetType}-ALB-Listener-${EnvType}
       Priority: !FindInMap [TargetGroupDefinitionMap, !Ref ServiceName, Priority]
 
 Outputs:
@@ -88,4 +88,4 @@ Outputs:
     Description: TargetGroup Service
     Value: !Ref TargetGroup
     Export:
-      Name: !Sub ${VPCName}-${SubnetType}-${ServiceName}-TargetGroup
+      Name: !Sub ${VPCName}-${SubnetType}-${ServiceName}-TargetGroup-${EnvType}

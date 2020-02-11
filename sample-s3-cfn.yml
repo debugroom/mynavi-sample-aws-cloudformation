@@ -51,3 +51,9 @@ Outputs:
     Value: !Ref S3Bucket
     Export:
       Name: !Sub MynaviSampleS3Bucket-${EnvType}
+
+  S3BucketArn:
+    Description: Mynavi S3 bucket arn
+    Value: !GetAtt S3Bucket.Arn
+    Export:
+      Name: !Sub MynaviSampleS3Bucket-Arn-${EnvType}

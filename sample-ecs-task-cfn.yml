@@ -26,6 +26,7 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "production"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -34,6 +35,7 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "staging"
     Dev:
       "Memory" : 1024
       "Cpu" : 512
@@ -42,6 +44,7 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "dev"
   FrontendAppTaskDefinitionMap:
     Production:
       "Memory" : 1024
@@ -51,6 +54,7 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "production"
     Staging:
       "Memory" : 1024
       "Cpu" : 512
@@ -59,6 +63,7 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "staging"
     Dev:
       "Memory" : 1024
       "Cpu" : 512
@@ -67,8 +72,31 @@ Mappings:
       "ContainerPort" : 8080
       "HostPort" : 0
       "ContainerMemory" : 1024
+      "Profile" : "dev"
 
 Resources:
+  BackendECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+
+  FrontendECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -81,6 +109,8 @@ Resources:
               Service: ecs-tasks.amazonaws.com
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
 
   BackendServiceECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -91,7 +121,8 @@ Resources:
       Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Memory]
       Cpu: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Cpu]
       NetworkMode: bridge
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt BackendECSTaskRole.Arn
       ContainerDefinitions:
         - Name: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerName]
           Image: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerImage]
@@ -99,6 +130,12 @@ Resources:
             - ContainerPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerPort]
               HostPort: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, HostPort]
           Memory: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, ContainerMemory]
+          Environment:
+            - Name: ENV_TYPE
+              Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Profile]
+          Secrets:
+            - Name: RDS_PASSWORD,
+              ValueFrom : !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/mynavi-sample-cloudformation-rds-password"
 
   FrontendAppECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -109,7 +146,8 @@ Resources:
       Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, Memory]
       Cpu: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, Cpu]
       NetworkMode: bridge
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt FrontendECSTaskRole.Arn
       ContainerDefinitions:
         - Name: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerName]
           Image: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerImage]
@@ -117,9 +155,8 @@ Resources:
             - ContainerPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerPort]
               HostPort: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, HostPort]
           Environment:
-            - Name: SERVICE_DNS
-              Value:
-                Fn::ImportValue: !Sub ${VPCName}-PrivateALBDNS
+            - Name: ENV_TYPE
+              Value: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, Profile]
           Memory: !FindInMap [FrontendAppTaskDefinitionMap, !Ref EnvType, ContainerMemory]
 
 Outputs:
@@ -127,10 +164,22 @@ Outputs:
     Description: Frontend ECS Task Definition
     Value: !Ref FrontendAppECSTaskDefinition
     Export:
-      Name: !Sub ${VPCName}-FrontendEcsTaskDefinition-${EnvType]
+      Name: !Sub ${VPCName}-FrontendEcsTaskDefinition-${EnvType}
 
   BackendECSTaskDefinition:
     Description: Backend ECS Task Definition
     Value: !Ref BackendServiceECSTaskDefinition
     Export:
       Name: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+
+  FrontendECSTaskRole:
+    Description: Frontend ECS Task has role
+    Value: !Ref FrontendECSTaskRole
+    Export:
+      Name: !Sub ${VPCName}-FrontendEcsTaskRole-${EnvType}
+
+  BackendECSTaskRole:
+    Description: Backend ECS Task has role
+    Value: !Ref BackendECSTaskRole
+    Export:
+      Name: !Sub ${VPCName}-BackendEcsTaskRole-${EnvType}

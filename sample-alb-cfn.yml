@@ -118,46 +118,46 @@ Outputs:
     Description: Frontend ALB
     Value: !Ref FrontendALB
     Export:
-      Name: !Sub ${VPCName}-Frontend-ALB
+      Name: !Sub ${VPCName}-Frontend-ALB-${EnvType}
 
   BackendALB:
     Description: Backend ALB
     Value: !Ref BackendALB
     Export:
-      Name: !Sub ${VPCName}-Backend-ALB
+      Name: !Sub ${VPCName}-Backend-ALB-${EnvType}
 
   FrontendALBDNS:
     Description: Public DNS Name
     Value: !GetAtt FrontendALB.DNSName
     Export:
-      Name: !Sub ${VPCName}-FrontendALBDNS
+      Name: !Sub ${VPCName}-FrontendALBDNS-${EnvType}
 
   BackendALBDNS:
     Description: Private DNS Name
     Value: !GetAtt BackendALB.DNSName
     Export:
-      Name: !Sub ${VPCName}-BackendALBDNS
+      Name: !Sub ${VPCName}-BackendALBDNS-${EnvType}
 
   FrontendALBDefaultTargetGroup:
     Description: Frontend TagetGroup Default
     Value: !Ref FrontendALBDefaultTargetGroup
     Export:
-      Name: !Sub ${VPCName}-Frontend-ALB-DefaultTargetGroup
+      Name: !Sub ${VPCName}-Frontend-ALB-DefaultTargetGroup-${EnvType}
 
   BackendALBDefaultTargetGroup:
     Description: Backend TagetGroup Default
     Value: !Ref BackendALBDefaultTargetGroup
     Export:
-      Name: !Sub ${VPCName}-Backend-ALB-DefaultTargetGroup
+      Name: !Sub ${VPCName}-Backend-ALB-DefaultTargetGroup-${EnvType}
 
   FrontendALBListener:
     Description: Frontend ALB Listener
     Value: !Ref FrontendALBListener
     Export:
-      Name: !Sub ${VPCName}-Frontend-ALB-Listener
+      Name: !Sub ${VPCName}-Frontend-ALB-Listener-${EnvType}
 
   BackendALBListener:
     Description: Backend ALB Listener
     Value: !Ref BackendALBListener
     Export:
-      Name: !Sub ${VPCName}-Backend-ALB-Listener
+      Name: !Sub ${VPCName}-Backend-ALB-Listener-${EnvType}
