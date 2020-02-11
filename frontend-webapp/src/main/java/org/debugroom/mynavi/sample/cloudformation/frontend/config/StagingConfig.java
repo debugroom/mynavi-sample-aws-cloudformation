@@ -56,7 +56,7 @@ public class StagingConfig {
     @Bean
     public RestOperations restOperations(RestTemplateBuilder restTemplateBuilder){
         return restTemplateBuilder.rootUri(cloudFormationStackInfo().getExportValue(
-              "ALBStagingStack" , "mynavi-sample-cloudformation-vpc-BackendALBDNS"))
+              ALB_STACK_NAME , ALB_BACKEND_ALB_EXPORT_NAME))
                 .interceptors(new MDCLoggingInterceptor()).build();
     }
 
