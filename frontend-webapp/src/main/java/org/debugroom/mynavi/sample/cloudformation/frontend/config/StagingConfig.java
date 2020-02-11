@@ -45,7 +45,7 @@ public class StagingConfig {
     private static final String SQS_REGION_EXPORT = "MynaviSampleSQS-Staging-Region";
     private static final String ELASTICACHE_STACK_NAME = "ElastiCacheStagingStack";
     private static final String ELASTICACHE_ENDPOINT_EXPORT = "mynavi-sample-cloudformation-vpc-ElastiCacheRedisEndPoint-Staging";
-    private static final String ELASTICACHE_PORT_EXPORT = "mynavi-sample-cloudformation-vpc-ElastiCacheRedisPort-Starging";
+    private static final String ELASTICACHE_PORT_EXPORT = "mynavi-sample-cloudformation-vpc-ElastiCacheRedisPort-Staging";
 
     @Bean
     CloudFormationStackInfo cloudFormationStackInfo(){
