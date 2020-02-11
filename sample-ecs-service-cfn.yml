@@ -73,35 +73,35 @@ Resources:
           TargetGroupArn:
             Fn::ImportValue: !Sub ${VPCName}-Frontend-FrontendWebApp-TargetGroup-${EnvType}
 
-#  BackendUserService:
-#    Type: AWS::ECS::Service
-#    Properties:
-#      Cluster:
-#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
-#      DesiredCount: !FindInMap [BackendUserServiceMap, !Ref EnvType, DesiredCount]
-#      TaskDefinition:
-#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
-#      LaunchType: EC2
-#      LoadBalancers:
-#        - ContainerName: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerName]
-#          ContainerPort: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerPort]
-#          TargetGroupArn:
-#            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendUserService-TargetGroup-${EnvType}
+  BackendUserService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
+      DesiredCount: !FindInMap [BackendUserServiceMap, !Ref EnvType, DesiredCount]
+      TaskDefinition:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+      LaunchType: EC2
+      LoadBalancers:
+        - ContainerName: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerName]
+          ContainerPort: !FindInMap [BackendUserServiceMap, !Ref EnvType, ContainerPort]
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendUserService-TargetGroup-${EnvType}
 
-#  BackendSampleService:
-#    Type: AWS::ECS::Service
-#    Properties:
-#      Cluster:
-#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
-#      DesiredCount: !FindInMap [BackendSampleServiceMap, !Ref EnvType, DesiredCount]
-#      TaskDefinition:
-#        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
-#      LaunchType: EC2
-#      LoadBalancers:
-#        - ContainerName: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerName]
-#          ContainerPort: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerPort]
-#          TargetGroupArn:
-#            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendSampleService-TargetGroup-${EnvType}
+  BackendSampleService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
+      DesiredCount: !FindInMap [BackendSampleServiceMap, !Ref EnvType, DesiredCount]
+      TaskDefinition:
+        Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
+      LaunchType: EC2
+      LoadBalancers:
+        - ContainerName: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerName]
+          ContainerPort: !FindInMap [BackendSampleServiceMap, !Ref EnvType, ContainerPort]
+          TargetGroupArn:
+            Fn::ImportValue: !Sub ${VPCName}-Backend-BackendSampleService-TargetGroup-${EnvType}
 
 Outputs:
   FrontendWebAppService:
@@ -109,13 +109,13 @@ Outputs:
     Value: !Ref FrontendWebAppService
     Export:
       Name: !Sub ${VPCName}-FrontendWebAppService-${EnvType}
-#  BackendUserService:
-#    Description: Backend ECS Service
-#    Value: !Ref BackendUserService
-#    Export:
-#      Name: !Sub ${VPCName}-BackendUserService-${EnvType}
-#  BackendSampleService:
-#    Description: Backend ECS Service
-#    Value: !Ref BackendSampleService
-#    Export:
-#      Name: !Sub ${VPCName}-BackendSampleService-${EnvType}
+  BackendUserService:
+    Description: Backend ECS Service
+    Value: !Ref BackendUserService
+    Export:
+      Name: !Sub ${VPCName}-BackendUserService-${EnvType}
+  BackendSampleService:
+    Description: Backend ECS Service
+    Value: !Ref BackendSampleService
+    Export:
+      Name: !Sub ${VPCName}-BackendSampleService-${EnvType}

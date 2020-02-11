@@ -134,7 +134,7 @@ Resources:
             - Name: ENV_TYPE
               Value: !FindInMap [BackendServiceTaskDefinitionMap, !Ref EnvType, Profile]
           Secrets:
-            - Name: RDS_PASSWORD,
+            - Name: RDS_PASSWORD
               ValueFrom : !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/mynavi-sample-cloudformation-rds-password"
 
   FrontendAppECSTaskDefinition:

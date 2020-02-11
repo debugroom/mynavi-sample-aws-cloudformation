@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 public class StagingConfig {
 
     private static final String ALB_STACK_NAME = "ALBStagingStack";
+    private static final String ALB_BACKEND_ALB_EXPORT_NAME = "mynavi-sample-cloudformation-vpc-BackendALBDNS-Staging";
     private static final String S3_STACK_NAME = "S3StagingStack";
     private static final String S3_BUCKET_EXPORT = "MynaviSampleS3Bucket-Staging";
     private static final String SQS_STACK_NAME = "SQSStagingStack";
