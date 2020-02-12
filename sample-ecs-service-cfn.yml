@@ -64,6 +64,7 @@ Resources:
       Cluster:
         Fn::ImportValue: !Sub ${VPCName}-FrontendEcsCluster-${EnvType}
       DesiredCount: !FindInMap [FrontendWebAppMap, !Ref EnvType, DesiredCount]
+      HealthCheckGracePeriodSeconds: 60
       TaskDefinition:
         Fn::ImportValue: !Sub ${VPCName}-FrontendEcsTaskDefinition-${EnvType}
       LaunchType: EC2
@@ -79,6 +80,7 @@ Resources:
       Cluster:
         Fn::ImportValue: !Sub ${VPCName}-BackendEcsCluster-${EnvType}
       DesiredCount: !FindInMap [BackendUserServiceMap, !Ref EnvType, DesiredCount]
+      HealthCheckGracePeriodSeconds: 60
       TaskDefinition:
         Fn::ImportValue: !Sub ${VPCName}-BackendEcsTaskDefinition-${EnvType}
       LaunchType: EC2

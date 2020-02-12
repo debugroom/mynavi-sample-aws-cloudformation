@@ -64,10 +64,11 @@ Resources:
       Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !Ref FrontendHealthCheckPath
+      HealthCheckIntervalSeconds: 60
       HealthyThresholdCount: 2
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
-          Value: '20'
+          Value: '60'
 
   FrontendALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -83,6 +84,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Name: BackendALB
+      Scheme: internal
       Subnets:
         - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet1
         - Fn::ImportValue: !Sub ${VPCName}-PrivateSubnet2
@@ -98,10 +100,11 @@ Resources:
       Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !Ref BackendDefaultHealthCheckPath
+      HealthCheckIntervalSeconds: 60
       HealthyThresholdCount: 2
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
-          Value: '20'
+          Value: '60'
 
   BackendALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener

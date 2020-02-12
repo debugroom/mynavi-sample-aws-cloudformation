@@ -9,11 +9,11 @@ Mappings:
       "HealthCheckPath": "/frontend/healthcheck"
       "Priority": 1
     BackendUserService:
-      "PathPattern": "/backend/user*"
+      "PathPattern": "/backend/api/v1/user*"
       "HealthCheckPath": "/backend/api/v1/healthcheck"
       "Priority": 1
     BackendSampleService:
-      "PathPattern": "/backend/sample*"
+      "PathPattern": "/backend/api/v1/sample*"
       "HealthCheckPath": "/backend/api/v1/healthcheck"
       "Priority": 2
   DeployEnvironmentMap:
@@ -63,10 +63,11 @@ Resources:
       Port: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Port]
       Protocol: !FindInMap [DeployEnvironmentMap, !Ref EnvType, Protocol]
       HealthCheckPath: !FindInMap [TargetGroupDefinitionMap, !Ref ServiceName, HealthCheckPath]
+      HealthCheckIntervalSeconds: 60
       HealthyThresholdCount: 2
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
-          Value: '20'
+          Value: '60'
 
   ListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule

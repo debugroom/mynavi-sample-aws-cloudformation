@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#stack_name="mynavi-sample-infra-staging"
+stack_name="mynavi-sample-infra-staging"
 #stack_name="mynavi-sample-infra-dev"
 #stack_name="mynavi-sample-ecs-service"
 #stack_name="mynavi-sample-ecs-taskrole-frontend"
 #stack_name="mynavi-sample-ecs-taskrole-backend"
-stack_name="mynavi-sample-ecs-task"
+#stack_name="mynavi-sample-ecs-task"
 #stack_name="mynavi-sample-ecs-cluster"
 #stack_name="mynavi-sample-sqs"
 #stack_name="mynavi-sample-s3"

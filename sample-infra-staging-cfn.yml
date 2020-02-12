@@ -134,7 +134,7 @@ Resources:
     DependsOn:
       - ECSTaskDefinitionStagingStack
     Properties:
-      TemplateURL: ./sample-ecs-taskrole-backend-cfn.yml
+      TemplateURL: ./sample-ecs-taskrole-frontend-cfn.yml
       Parameters:
         EnvType: !Sub ${EnvType}
 
